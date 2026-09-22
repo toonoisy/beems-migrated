@@ -1,0 +1,51 @@
+.lesson-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lesson-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.lesson-card__image {
+  aspect-ratio: 16 / 10;
+  border-radius: 0;
+  width: 100%;
+  object-fit: cover;
+}
+
+.lesson-card__body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lesson-card__number {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-dark);
+}
+
+.lesson-card__body h3 {
+  margin: 4px 0 6px;
+}
+
+.lesson-card__body p {
+  font-size: 0.92rem;
+  flex: 1;
+}
+
+.lesson-card__cta {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  margin-top: 8px;
+}

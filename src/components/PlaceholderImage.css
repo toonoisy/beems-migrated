@@ -1,0 +1,39 @@
+.placeholder-image {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: var(--radius-md);
+  color: var(--color-primary-light);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 20px;
+}
+
+.placeholder-image svg {
+  width: 25%;
+  min-width: 32px;
+  max-width: 72px;
+  opacity: 0.85;
+}
+
+.placeholder-image--primary {
+  background: linear-gradient(135deg, #e7eef1 0%, #d9e6ea 100%);
+  color: var(--color-primary);
+}
+
+.placeholder-image--accent {
+  background: linear-gradient(135deg, #fdf0dc 0%, #fbe3bd 100%);
+  color: var(--color-accent-dark);
+}
+
+.placeholder-image--muted {
+  background: var(--color-bg-alt);
+  color: var(--color-text-muted);
+}
