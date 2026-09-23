@@ -1,7 +1,14 @@
 #!/usr/bin/env node
-// Seeds Cloud Firestore's "lessons" collection and Firebase Storage with
-// placeholder thumbnail images, using the shared content in
-// src/data/lessons.js so the client fallback and the live database agree.
+// Seeds Cloud Firestore's "lessons" and "site" collections and Firebase
+// Storage, using the shared content in src/data/lessons.js so the client
+// fallback and the live database agree.
+//
+// Video uploads: if scripts/source-videos/<lesson-id>/en.mp4 and hi.mp4
+// exist, they're uploaded to Storage and their download URLs are written
+// to the lesson's videoUrlEn/videoUrlHi fields. Otherwise those fields
+// stay null and the site shows the "video coming soon" placeholder.
+// scripts/download-source-videos.sh populates that folder from the
+// original site's real footage — see that file for details.
 //
 // Auth: uses Application Default Credentials. Run `gcloud auth
 // application-default login` first, or set GOOGLE_APPLICATION_CREDENTIALS
@@ -11,10 +18,16 @@
 // Usage:
 //   node scripts/seed.js
 import { randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { lessons } from '../src/data/lessons.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SOURCE_VIDEOS_DIR = path.join(__dirname, 'source-videos');
 
 const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT;
 const storageBucket = process.env.VITE_FIREBASE_STORAGE_BUCKET || (projectId ? `${projectId}.appspot.com` : undefined);
@@ -57,41 +70,93 @@ function escapeXml(value) {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function downloadUrlFor(storagePath, token) {
+  const encodedPath = encodeURIComponent(storagePath);
+  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${token}`;
+}
+
 async function uploadThumbnail(lesson) {
-  const path = `lessons/${lesson.id}/thumbnail.svg`;
-  const file = bucket.file(path);
+  const storagePath = `lessons/${lesson.id}/thumbnail.svg`;
   const token = randomUUID();
 
-  await file.save(placeholderSvg(lesson), {
+  await bucket.file(storagePath).save(placeholderSvg(lesson), {
     contentType: 'image/svg+xml',
     metadata: { metadata: { firebaseStorageDownloadTokens: token } },
   });
 
-  const encodedPath = encodeURIComponent(path);
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${token}`;
+  return downloadUrlFor(storagePath, token);
 }
 
-async function seed() {
-  console.log(`Seeding project "${projectId}"…`);
+// Uploads a local video file to Storage and returns its download URL, or
+// null if the file doesn't exist locally (nothing to upload yet).
+async function uploadVideoIfPresent(localPath, storagePath) {
+  if (!existsSync(localPath)) return null;
 
+  const token = randomUUID();
+  await bucket.upload(localPath, {
+    destination: storagePath,
+    metadata: {
+      contentType: 'video/mp4',
+      metadata: { firebaseStorageDownloadTokens: token },
+    },
+  });
+
+  return downloadUrlFor(storagePath, token);
+}
+
+async function seedLessons() {
   for (const lesson of lessons) {
     const thumbnailUrl = await uploadThumbnail(lesson);
+
+    const videoUrlEn = await uploadVideoIfPresent(
+      path.join(SOURCE_VIDEOS_DIR, lesson.id, 'en.mp4'),
+      `lessons/${lesson.id}/en.mp4`,
+    );
+    const videoUrlHi = await uploadVideoIfPresent(
+      path.join(SOURCE_VIDEOS_DIR, lesson.id, 'hi.mp4'),
+      `lessons/${lesson.id}/hi.mp4`,
+    );
 
     await db.collection('lessons').doc(lesson.id).set({
       order: lesson.order,
       title: lesson.title,
       summary: lesson.summary,
       thumbnailUrl,
-      // Populate these with real Storage download URLs once footage is
-      // uploaded; the site shows a placeholder player until then.
-      videoUrlEn: null,
-      videoUrlHi: null,
+      videoUrlEn,
+      videoUrlHi,
     });
 
-    console.log(`  ✓ ${lesson.title}`);
+    const videoNote = videoUrlEn || videoUrlHi ? '' : ' (no video files found, placeholder player will show)';
+    console.log(`  ✓ ${lesson.title}${videoNote}`);
+  }
+}
+
+// The homepage's bilingual intro video isn't part of the lessons grid, so
+// it's kept as its own "site/home" document instead.
+async function seedHomeIntro() {
+  const videoUrlEn = await uploadVideoIfPresent(
+    path.join(SOURCE_VIDEOS_DIR, 'home', 'en.mp4'),
+    'home/intro-en.mp4',
+  );
+  const videoUrlHi = await uploadVideoIfPresent(
+    path.join(SOURCE_VIDEOS_DIR, 'home', 'hi.mp4'),
+    'home/intro-hi.mp4',
+  );
+
+  if (!videoUrlEn && !videoUrlHi) {
+    console.log('  – Skipping home intro video (no local files found)');
+    return;
   }
 
-  console.log('Done. The Videos page will now read this content from Firestore.');
+  await db.collection('site').doc('home').set({ introVideoUrlEn: videoUrlEn, introVideoUrlHi: videoUrlHi });
+  console.log('  ✓ Home intro video');
+}
+
+async function seed() {
+  console.log(`Seeding project "${projectId}"…`);
+  await seedLessons();
+  await seedHomeIntro();
+  console.log('Done. The Videos and Home pages will now read this content from Firestore/Storage.');
 }
 
 seed().catch((error) => {

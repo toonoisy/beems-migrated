@@ -19,6 +19,9 @@ firestore-debug.log
 ui-debug.log
 serviceAccountKey.json
 
+# Downloaded source media for the seed script (large binaries, not for git)
+scripts/source-videos/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
