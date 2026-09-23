@@ -46,7 +46,7 @@ export default function Home() {
               <Link to="/contact" className="btn btn--outline">Contact</Link>
             </div>
           </div>
-          <PlaceholderImage icon="family" tone="accent" label="Family illustration" className="hero__image" />
+          <PlaceholderImage icon="family" tone="primary" label="Family illustration" className="hero__image" />
         </div>
       </section>
 
