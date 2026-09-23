@@ -11,6 +11,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Small site-wide content (currently just the homepage's bilingual
+    // intro video URLs), same public-read/admin-write model as lessons.
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Anyone can submit the public contact form, but nobody can read,
     // edit, or delete messages back out through the client SDK — only
     // via the Firebase console or an authenticated admin tool.

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import PlaceholderImage from '../components/PlaceholderImage';
 import BilingualVideo from '../components/BilingualVideo';
 import { lessons } from '../data/lessons';
+import { useHomeIntro } from '../hooks/useHomeIntro';
 import './Home.css';
 
 const HIGHLIGHTS = [
@@ -23,6 +24,8 @@ const HIGHLIGHTS = [
 ];
 
 export default function Home() {
+  const { introVideoUrlEn, introVideoUrlHi } = useHomeIntro();
+
   return (
     <>
       <section className="section hero">
@@ -76,7 +79,11 @@ export default function Home() {
             </p>
             <Link to="/videos" className="btn btn--primary">See all lessons</Link>
           </div>
-          <BilingualVideo title="Introduction to C-BEEMS" />
+          <BilingualVideo
+            title="Introduction to C-BEEMS"
+            videoUrlEn={introVideoUrlEn}
+            videoUrlHi={introVideoUrlHi}
+          />
         </div>
       </section>
 
