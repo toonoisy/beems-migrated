@@ -58,9 +58,11 @@ export default function Navbar() {
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
           >
-            <span />
-            <span />
-            <span />
+            <span className="navbar__toggle-icon">
+              <span />
+              <span />
+              <span />
+            </span>
           </button>
         </div>
       </div>
