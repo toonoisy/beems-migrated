@@ -22,7 +22,7 @@ interface PlaceholderImageProps {
 export default function PlaceholderImage({ icon = 'family', label, tone = 'primary', className = '' }: PlaceholderImageProps) {
   return (
     <div className={`placeholder-image placeholder-image--${tone} ${className}`} role="img" aria-label={label || 'Placeholder image'}>
-      <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
         {ICONS[icon] || ICONS.family}
       </svg>
       {label ? <span>{label}</span> : null}

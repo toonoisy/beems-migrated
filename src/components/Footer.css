@@ -13,6 +13,10 @@
   border-bottom: 1px solid rgba(244, 241, 234, 0.14);
 }
 
+.footer__grid > * {
+  min-width: 0;
+}
+
 .footer__brand p {
   color: rgba(244, 241, 234, 0.72);
   max-width: 32ch;

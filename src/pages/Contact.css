@@ -5,6 +5,10 @@
   align-items: start;
 }
 
+.contact-grid > * {
+  min-width: 0;
+}
+
 .contact-details {
   list-style: none;
   margin: 28px 0;

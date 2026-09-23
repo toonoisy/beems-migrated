@@ -5,6 +5,14 @@
   align-items: center;
 }
 
+/* Grid items default to a min-width based on their content's intrinsic
+   size, which some engines compute more strictly than others — without
+   this, unbreakable/replaced content can force a column (and the whole
+   grid) wider than its container, eating into the right-hand margin. */
+.about-hero__grid > * {
+  min-width: 0;
+}
+
 .about-hero__image {
   aspect-ratio: 4 / 3;
   min-height: 260px;
