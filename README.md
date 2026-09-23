@@ -7,7 +7,7 @@ lessons and practical resources.
 
 ## Stack
 
-- **Frontend:** React 19 + React Router, built with Vite
+- **Frontend:** React 19 + TypeScript + React Router, built with Vite
 - **Database:** Cloud Firestore (`lessons` collection for video content,
   `site` collection for the homepage intro video, `messages` collection
   for contact form submissions)
@@ -16,7 +16,7 @@ lessons and practical resources.
 
 The site works out of the box with placeholder content and images even
 before Firebase is connected - Firestore reads fall back to the static
-content in [`src/data/lessons.js`](src/data/lessons.js), and images fall
+content in [`src/data/lessons.ts`](src/data/lessons.ts), and images fall
 back to the generated `PlaceholderImage` component. Once Firebase is
 connected and seeded, real content takes over automatically.
 
@@ -67,7 +67,7 @@ content, no Firebase project required.
 
 ## Seeding Firestore + Storage with placeholder lesson content
 
-`scripts/seed.js` writes the 8 lesson documents to Firestore and uploads a
+`scripts/seed.ts` (run via `tsx`) writes the 8 lesson documents to Firestore and uploads a
 placeholder thumbnail image for each one to Storage, using
 [Application Default Credentials](https://firebase.google.com/docs/admin/setup#initialize-sdk):
 
@@ -81,7 +81,7 @@ npm run seed
 Service accounts, and set `GOOGLE_APPLICATION_CREDENTIALS` to its path
 instead of running `gcloud auth`.)
 
-Re-run the seed script any time you edit `src/data/lessons.js` to keep
+Re-run the seed script any time you edit `src/data/lessons.ts` to keep
 Firestore in sync.
 
 ### Real lesson videos
@@ -110,7 +110,7 @@ If you don't have `scripts/source-videos/` (e.g. on a fresh clone) and
 have your own footage instead, drop `en.mp4`/`hi.mp4` files into
 `scripts/source-videos/<lesson-id>/` (or `scripts/source-videos/home/` for
 the homepage intro) using the lesson ids from
-[`src/data/lessons.js`](src/data/lessons.js), then run `npm run seed`.
+[`src/data/lessons.ts`](src/data/lessons.ts), then run `npm run seed`.
 
 ## Build & deploy to Firebase Hosting
 
@@ -118,6 +118,10 @@ the homepage intro) using the lesson ids from
 npm run build
 firebase deploy --only hosting
 ```
+
+`npm run build` runs `tsc -b` (typecheck, no emit — Vite handles the actual
+transpilation) before `vite build`. Run `npm run typecheck` on its own any
+time you just want the type errors without a full build.
 
 Or deploy everything (hosting, rules) in one go:
 
@@ -135,10 +139,11 @@ src/
   data/         Static fallback content shared with the seed script
   hooks/        useLessons() - Firestore fetch with local fallback
   lib/          Firebase app initialization
+  types.ts      Shared TypeScript interfaces (Lesson, HomeIntro, Theme, ...)
 scripts/
-  seed.js                     Seeds Firestore + Storage with lesson content (+ real videos if present)
-  download-source-videos.sh   One-off: pulls the original site's real videos into source-videos/
-  source-videos/              Downloaded source footage (gitignored, not in the repo)
+  seed.ts                      Seeds Firestore + Storage with lesson content (+ real videos if present); run via `tsx`
+  download-source-videos.sh    One-off: pulls the original site's real videos into source-videos/
+  source-videos/               Downloaded source footage (gitignored, not in the repo)
 firestore.rules   Public read on lessons, public create-only on messages
 storage.rules     Public read on uploaded media, no public writes
 ```
@@ -150,7 +155,7 @@ pages (no real copy), and its footer phone/email/address and social links
 were still Wix's own placeholder values. This rebuild keeps that same
 footer structure (address, phone, email, social icons, Privacy Policy,
 Accessibility Statement, copyright) so it's easy to find and replace with
-BEEMS' real details - see `src/components/Footer.jsx`.
+BEEMS' real details - see `src/components/Footer.tsx`.
 
 The 8 lesson videos and the homepage intro video, on the other hand, were
 real, working bilingual (English/Hindi) footage on the original site — see

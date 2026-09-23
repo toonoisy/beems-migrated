@@ -2,7 +2,12 @@ import { Link } from 'react-router-dom';
 import PlaceholderImage from '../components/PlaceholderImage';
 import './About.css';
 
-const VALUES = [
+interface Value {
+  title: string;
+  body: string;
+}
+
+const VALUES: Value[] = [
   {
     title: 'Culturally grounded',
     body: 'Our resources are shaped by the real experiences of Indian families who have made Australia home.',

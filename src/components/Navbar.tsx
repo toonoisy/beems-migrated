@@ -3,7 +3,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import './Navbar.css';
 
-const LINKS = [
+interface NavLinkItem {
+  to: string;
+  label: string;
+  end?: boolean;
+}
+
+const LINKS: NavLinkItem[] = [
   { to: '/', label: 'Home', end: true },
   { to: '/about', label: 'About' },
   { to: '/videos', label: 'Videos' },

@@ -4,7 +4,7 @@ import BilingualVideo from '../components/BilingualVideo';
 import './LessonDetail.css';
 
 export default function LessonDetail() {
-  const { lessonId } = useParams();
+  const { lessonId } = useParams<{ lessonId: string }>();
   const { lessons, loading } = useLessons();
 
   if (loading) {

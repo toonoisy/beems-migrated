@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import './BilingualVideo.css';
 
+type Lang = 'en' | 'hi';
+
+interface BilingualVideoProps {
+  title: string;
+  videoUrlEn?: string | null;
+  videoUrlHi?: string | null;
+}
+
 // The source site embeds a separate English and Hindi video per lesson.
-// Real footage isn't available yet, so this renders a placeholder player
-// with a language toggle in its place — swap `videoUrlEn` / `videoUrlHi`
-// for real Firebase Storage download URLs once footage is uploaded.
-export default function BilingualVideo({ title, videoUrlEn, videoUrlHi }) {
-  const [lang, setLang] = useState('en');
+// This renders those (once seeded to Firestore/Storage) with a language
+// toggle, or a placeholder player if a URL hasn't been provided yet.
+export default function BilingualVideo({ title, videoUrlEn, videoUrlHi }: BilingualVideoProps) {
+  const [lang, setLang] = useState<Lang>('en');
   const activeUrl = lang === 'en' ? videoUrlEn : videoUrlHi;
 
   return (

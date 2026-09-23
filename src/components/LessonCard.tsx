@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom';
 import PlaceholderImage from './PlaceholderImage';
+import type { Lesson } from '../types';
 import './LessonCard.css';
 
-export default function LessonCard({ lesson }) {
+interface LessonCardProps {
+  lesson: Lesson;
+}
+
+export default function LessonCard({ lesson }: LessonCardProps) {
   return (
     <Link to={`/videos/${lesson.id}`} className="lesson-card card">
       {lesson.thumbnailUrl ? (

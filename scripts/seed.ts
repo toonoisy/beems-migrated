@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Seeds Cloud Firestore's "lessons" and "site" collections and Firebase
-// Storage, using the shared content in src/data/lessons.js so the client
+// Storage, using the shared content in src/data/lessons.ts so the client
 // fallback and the live database agree.
 //
 // Video uploads: if scripts/source-videos/<lesson-id>/en.mp4 and hi.mp4
@@ -16,7 +16,7 @@
 // Firebase console > Project settings > Service accounts.
 //
 // Usage:
-//   node scripts/seed.js
+//   npm run seed
 import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -24,7 +24,8 @@ import { fileURLToPath } from 'node:url';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { lessons } from '../src/data/lessons.js';
+import { lessons } from '../src/data/lessons.ts';
+import type { Lesson } from '../src/types.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SOURCE_VIDEOS_DIR = path.join(__dirname, 'source-videos');
@@ -48,7 +49,7 @@ initializeApp({
 const db = getFirestore();
 const bucket = getStorage().bucket();
 
-function placeholderSvg(lesson) {
+function placeholderSvg(lesson: Lesson): string {
   const label = `Lesson ${lesson.order}`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
@@ -66,16 +67,16 @@ function placeholderSvg(lesson) {
 </svg>`;
 }
 
-function escapeXml(value) {
+function escapeXml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function downloadUrlFor(storagePath, token) {
+function downloadUrlFor(storagePath: string, token: string): string {
   const encodedPath = encodeURIComponent(storagePath);
   return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${token}`;
 }
 
-async function uploadThumbnail(lesson) {
+async function uploadThumbnail(lesson: Lesson): Promise<string> {
   const storagePath = `lessons/${lesson.id}/thumbnail.svg`;
   const token = randomUUID();
 
@@ -89,7 +90,7 @@ async function uploadThumbnail(lesson) {
 
 // Uploads a local video file to Storage and returns its download URL, or
 // null if the file doesn't exist locally (nothing to upload yet).
-async function uploadVideoIfPresent(localPath, storagePath) {
+async function uploadVideoIfPresent(localPath: string, storagePath: string): Promise<string | null> {
   if (!existsSync(localPath)) return null;
 
   const token = randomUUID();
@@ -104,7 +105,7 @@ async function uploadVideoIfPresent(localPath, storagePath) {
   return downloadUrlFor(storagePath, token);
 }
 
-async function seedLessons() {
+async function seedLessons(): Promise<void> {
   for (const lesson of lessons) {
     const thumbnailUrl = await uploadThumbnail(lesson);
 
@@ -133,7 +134,7 @@ async function seedLessons() {
 
 // The homepage's bilingual intro video isn't part of the lessons grid, so
 // it's kept as its own "site/home" document instead.
-async function seedHomeIntro() {
+async function seedHomeIntro(): Promise<void> {
   const videoUrlEn = await uploadVideoIfPresent(
     path.join(SOURCE_VIDEOS_DIR, 'home', 'en.mp4'),
     'home/intro-en.mp4',
@@ -152,7 +153,7 @@ async function seedHomeIntro() {
   console.log('  ✓ Home intro video');
 }
 
-async function seed() {
+async function seed(): Promise<void> {
   console.log(`Seeding project "${projectId}"…`);
   await seedLessons();
   await seedHomeIntro();

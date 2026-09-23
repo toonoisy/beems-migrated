@@ -3,9 +3,16 @@ import PlaceholderImage from '../components/PlaceholderImage';
 import BilingualVideo from '../components/BilingualVideo';
 import { lessons } from '../data/lessons';
 import { useHomeIntro } from '../hooks/useHomeIntro';
+import type { PlaceholderIcon } from '../types';
 import './Home.css';
 
-const HIGHLIGHTS = [
+interface Highlight {
+  icon: PlaceholderIcon;
+  title: string;
+  body: string;
+}
+
+const HIGHLIGHTS: Highlight[] = [
   {
     icon: 'video',
     title: 'Bilingual video lessons',

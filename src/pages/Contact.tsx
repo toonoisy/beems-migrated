@@ -1,24 +1,32 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../lib/firebase';
 import PlaceholderImage from '../components/PlaceholderImage';
 import './Contact.css';
 
-const INITIAL_FORM = { name: '', email: '', message: '' };
+interface ContactForm {
+  name: string;
+  email: string;
+  message: string;
+}
+
+type Status = 'idle' | 'sending' | 'sent' | 'error';
+
+const INITIAL_FORM: ContactForm = { name: '', email: '', message: '' };
 
 export default function Contact() {
-  const [form, setForm] = useState(INITIAL_FORM);
-  const [status, setStatus] = useState('idle'); // idle | sending | sent | error
+  const [form, setForm] = useState<ContactForm>(INITIAL_FORM);
+  const [status, setStatus] = useState<Status>('idle');
 
-  function handleChange(event) {
+  function handleChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
-  async function handleSubmit(event) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!isFirebaseConfigured) {
+    if (!isFirebaseConfigured || !db) {
       setStatus('error');
       return;
     }
@@ -76,7 +84,7 @@ export default function Contact() {
           <input id="email" name="email" type="email" required value={form.email} onChange={handleChange} />
 
           <label htmlFor="message">Message</label>
-          <textarea id="message" name="message" rows="5" required value={form.message} onChange={handleChange} />
+          <textarea id="message" name="message" rows={5} required value={form.message} onChange={handleChange} />
 
           <button type="submit" className="btn btn--primary" disabled={status === 'sending'}>
             {status === 'sending' ? 'Sending…' : 'Send message'}

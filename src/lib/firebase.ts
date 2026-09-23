@@ -1,6 +1,6 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -18,12 +18,12 @@ export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey && firebaseConfig.projectId,
 );
 
-let app;
+let app: FirebaseApp | undefined;
 if (isFirebaseConfigured) {
   app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 }
 
-export const db = isFirebaseConfigured ? getFirestore(app) : null;
-export const storage = isFirebaseConfigured ? getStorage(app) : null;
+export const db: Firestore | null = isFirebaseConfigured && app ? getFirestore(app) : null;
+export const storage: FirebaseStorage | null = isFirebaseConfigured && app ? getStorage(app) : null;
 
 export default app;

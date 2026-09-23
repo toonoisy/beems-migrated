@@ -1,8 +1,10 @@
+import type { Lesson } from '../types';
+
 // Static fallback content, mirroring the shape of documents in the
-// Firestore "lessons" collection (see scripts/seed.js). The Videos and
+// Firestore "lessons" collection (see scripts/seed.ts). The Videos and
 // LessonDetail pages read from Firestore first and fall back to this list
 // so the site still looks complete before a Firebase project is connected.
-export const lessons = [
+export const lessons: Lesson[] = [
   {
     id: 'enculturation-acculturation',
     order: 1,
@@ -61,6 +63,6 @@ export const lessons = [
   },
 ];
 
-export function getLessonById(id) {
+export function getLessonById(id: string): Lesson | undefined {
   return lessons.find((lesson) => lesson.id === id);
 }
