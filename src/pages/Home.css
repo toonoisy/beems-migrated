@@ -86,7 +86,7 @@
 .topics-list__title {
   font-family: var(--font-heading);
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-heading);
   flex: 1;
 }
 

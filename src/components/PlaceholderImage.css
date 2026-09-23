@@ -8,7 +8,7 @@
   justify-content: center;
   gap: 10px;
   border-radius: var(--radius-md);
-  color: var(--color-primary-light);
+  color: var(--color-text-muted);
   font-family: var(--font-heading);
   font-size: 0.85rem;
   font-weight: 500;
@@ -24,13 +24,13 @@
 }
 
 .placeholder-image--primary {
-  background: linear-gradient(135deg, #e7eef1 0%, #d9e6ea 100%);
-  color: var(--color-primary);
+  background: linear-gradient(135deg, var(--placeholder-primary-from) 0%, var(--placeholder-primary-to) 100%);
+  color: var(--placeholder-primary-icon);
 }
 
 .placeholder-image--accent {
-  background: linear-gradient(135deg, #fdf0dc 0%, #fbe3bd 100%);
-  color: var(--color-accent-dark);
+  background: linear-gradient(135deg, var(--placeholder-accent-from) 0%, var(--placeholder-accent-to) 100%);
+  color: var(--placeholder-accent-icon);
 }
 
 .placeholder-image--muted {

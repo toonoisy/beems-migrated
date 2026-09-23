@@ -7,7 +7,7 @@
   border-radius: 50%;
   border: 1px solid var(--color-border);
   background: transparent;
-  color: var(--color-primary);
+  color: var(--color-heading);
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;

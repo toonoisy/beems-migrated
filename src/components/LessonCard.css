@@ -46,6 +46,6 @@
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--color-primary);
+  color: var(--color-heading);
   margin-top: 8px;
 }
