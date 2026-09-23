@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db, isFirebaseConfigured } from '../lib/firebase';
+import type { Firestore } from 'firebase/firestore';
+import { getDb } from '../lib/firebase';
 import type { HomeIntro } from '../types';
 
 const FALLBACK: HomeIntro = { introVideoUrlEn: null, introVideoUrlHi: null };
@@ -13,13 +13,16 @@ export function useHomeIntro(): HomeIntro {
   const [intro, setIntro] = useState<HomeIntro>(FALLBACK);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) return;
+    const dbPromise = getDb();
+    if (!dbPromise) return;
 
     let cancelled = false;
 
-    async function fetchIntro() {
-      if (!db) return;
+    async function fetchIntro(pending: Promise<Firestore>) {
       try {
+        const [db, { doc, getDoc }] = await Promise.all([pending, import('firebase/firestore')]);
+        if (cancelled) return;
+
         const snapshot = await getDoc(doc(db, 'site', 'home'));
         if (!cancelled && snapshot.exists()) {
           setIntro({ ...FALLBACK, ...(snapshot.data() as Partial<HomeIntro>) });
@@ -29,7 +32,7 @@ export function useHomeIntro(): HomeIntro {
       }
     }
 
-    fetchIntro();
+    fetchIntro(dbPromise);
     return () => {
       cancelled = true;
     };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db, isFirebaseConfigured } from '../lib/firebase';
+import type { Firestore } from 'firebase/firestore';
+import { getDb, isFirebaseConfigured } from '../lib/firebase';
 import { lessons as fallbackLessons } from '../data/lessons';
 import type { Lesson } from '../types';
 
@@ -12,13 +12,19 @@ export function useLessons() {
   const [loading, setLoading] = useState(isFirebaseConfigured);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) return;
+    const dbPromise = getDb();
+    if (!dbPromise) return;
 
     let cancelled = false;
 
-    async function fetchLessons() {
-      if (!db) return;
+    async function fetchLessons(pending: Promise<Firestore>) {
       try {
+        const [db, { collection, getDocs, orderBy, query }] = await Promise.all([
+          pending,
+          import('firebase/firestore'),
+        ]);
+        if (cancelled) return;
+
         const q = query(collection(db, 'lessons'), orderBy('order', 'asc'));
         const snapshot = await getDocs(q);
         if (cancelled) return;
@@ -35,7 +41,7 @@ export function useLessons() {
       }
     }
 
-    fetchLessons();
+    fetchLessons(dbPromise);
     return () => {
       cancelled = true;
     };

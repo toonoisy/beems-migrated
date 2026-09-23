@@ -1,6 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db, isFirebaseConfigured } from '../lib/firebase';
+import { getDb, isFirebaseConfigured } from '../lib/firebase';
 import PlaceholderImage from '../components/PlaceholderImage';
 import './Contact.css';
 
@@ -26,13 +25,18 @@ export default function Contact() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!isFirebaseConfigured || !db) {
+    const dbPromise = getDb();
+    if (!dbPromise) {
       setStatus('error');
       return;
     }
 
     setStatus('sending');
     try {
+      const [db, { addDoc, collection, serverTimestamp }] = await Promise.all([
+        dbPromise,
+        import('firebase/firestore'),
+      ]);
       await addDoc(collection(db, 'messages'), {
         ...form,
         createdAt: serverTimestamp(),
