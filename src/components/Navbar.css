@@ -2,9 +2,10 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(250, 248, 245, 0.92);
+  background: var(--color-nav-bg);
   backdrop-filter: saturate(180%) blur(10px);
   border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .navbar__inner {
@@ -35,6 +36,12 @@
   background: var(--color-primary);
   color: var(--color-accent);
   font-size: 1.1rem;
+}
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .navbar__links {

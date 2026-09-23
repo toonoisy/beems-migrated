@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle';
 import './Navbar.css';
 
 const LINKS = [
@@ -27,31 +28,35 @@ export default function Navbar() {
           <span>C-BEEMS</span>
         </NavLink>
 
-        <button
-          type="button"
-          className={`navbar__toggle ${open ? 'is-open' : ''}`}
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
+        <div className="navbar__actions">
+          <nav className={`navbar__links ${open ? 'is-open' : ''}`} aria-label="Primary">
+            {LINKS.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.end}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) => (isActive ? 'is-active' : '')}
+              >
+                {link.label}
+              </NavLink>
+            ))}
+          </nav>
 
-        <nav className={`navbar__links ${open ? 'is-open' : ''}`} aria-label="Primary">
-          {LINKS.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) => (isActive ? 'is-active' : '')}
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
+          <ThemeToggle />
+
+          <button
+            type="button"
+            className={`navbar__toggle ${open ? 'is-open' : ''}`}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
       </div>
     </header>
   );

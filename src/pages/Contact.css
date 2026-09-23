@@ -87,11 +87,11 @@
 }
 
 .contact-form__status--success {
-  color: #1a7a4c;
+  color: var(--color-success);
 }
 
 .contact-form__status--error {
-  color: #b5432b;
+  color: var(--color-error);
 }
 
 @media (max-width: 860px) {
