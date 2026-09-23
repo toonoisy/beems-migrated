@@ -1,0 +1,13 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Media (lesson thumbnails, hero images/videos) is public read-only.
+    // Uploads happen from the Firebase console or scripts/seed.js with
+    // admin credentials, not from the public site.
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
