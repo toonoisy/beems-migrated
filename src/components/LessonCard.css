@@ -30,7 +30,7 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-accent-dark);
+  color: var(--color-accent-text);
 }
 
 .lesson-card__body h3 {
