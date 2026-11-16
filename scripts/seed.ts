@@ -7,26 +7,43 @@
 // and are written to each lesson's videosEn/videosHi fields (and to
 // site/home for the homepage intro). Nothing is uploaded for them.
 //
-// Auth: uses Application Default Credentials. Run `gcloud auth
-// application-default login` first, or set GOOGLE_APPLICATION_CREDENTIALS
-// to a service account key JSON downloaded from
-// Firebase console > Project settings > Service accounts.
+// Config: VITE_FIREBASE_PROJECT_ID (and optionally
+// VITE_FIREBASE_STORAGE_BUCKET) are read from .env.local automatically;
+// variables already set in the shell take precedence.
+//
+// Auth: uses Application Default Credentials. If serviceAccountKey.json
+// (downloaded from Firebase console > Project settings > Service accounts)
+// is in the project root, it's used automatically. Otherwise run `gcloud
+// auth application-default login` first, or set
+// GOOGLE_APPLICATION_CREDENTIALS to a key file elsewhere.
 //
 // Usage:
 //   npm run seed
 import { randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { homeIntro, lessons } from '../src/data/lessons.ts';
 import type { Lesson } from '../src/types.ts';
 
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ENV_FILE = path.join(ROOT, '.env.local');
+const SERVICE_ACCOUNT_KEY = path.join(ROOT, 'serviceAccountKey.json');
+
+if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
+if (!process.env.GOOGLE_APPLICATION_CREDENTIALS && existsSync(SERVICE_ACCOUNT_KEY)) {
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = SERVICE_ACCOUNT_KEY;
+}
+
 const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT;
 const storageBucket = process.env.VITE_FIREBASE_STORAGE_BUCKET || (projectId ? `${projectId}.appspot.com` : undefined);
 
 if (!projectId) {
   console.error(
-    'Missing project id. Set VITE_FIREBASE_PROJECT_ID (e.g. in .env.local and `export $(cat .env.local | xargs)`) before running the seed script.',
+    'Missing project id. Set VITE_FIREBASE_PROJECT_ID in .env.local (see .env.example) before running the seed script.',
   );
   process.exit(1);
 }

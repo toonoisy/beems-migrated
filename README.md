@@ -72,14 +72,14 @@ placeholder thumbnail image for each one to Storage, using
 [Application Default Credentials](https://firebase.google.com/docs/admin/setup#initialize-sdk):
 
 ```bash
-gcloud auth application-default login   # one-time, needs the gcloud CLI
-export $(grep -v '^#' .env.local | xargs)   # loads VITE_FIREBASE_PROJECT_ID etc.
 npm run seed
 ```
 
-(Alternatively, download a service account key from Project settings ->
-Service accounts, and set `GOOGLE_APPLICATION_CREDENTIALS` to its path
-instead of running `gcloud auth`.)
+The script reads `VITE_FIREBASE_PROJECT_ID` from `.env.local` itself. For
+credentials it uses `serviceAccountKey.json` in the project root if present
+(download one from Project settings -> Service accounts; it's gitignored).
+Otherwise run `gcloud auth application-default login` once first, or set
+`GOOGLE_APPLICATION_CREDENTIALS` to a key file elsewhere.
 
 Re-run the seed script any time you edit `src/data/lessons.ts` to keep
 Firestore in sync.
