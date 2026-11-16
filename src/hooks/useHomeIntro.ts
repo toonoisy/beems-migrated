@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Firestore } from 'firebase/firestore';
 import { getDb } from '../lib/firebase';
+import { homeIntro as FALLBACK } from '../data/lessons';
 import type { HomeIntro } from '../types';
 
-const FALLBACK: HomeIntro = { introVideoUrlEn: null, introVideoUrlHi: null };
-
 // Reads the homepage's bilingual intro video URLs from the "site/home"
-// Firestore document. Falls back to null URLs (the BilingualVideo
-// component then shows its placeholder) before Firebase is connected or
-// seeded — see scripts/seed.ts.
+// Firestore document. Falls back to the Vimeo links in src/data/lessons.ts
+// before Firebase is connected or seeded — see scripts/seed.ts.
 export function useHomeIntro(): HomeIntro {
   const [intro, setIntro] = useState<HomeIntro>(FALLBACK);
 

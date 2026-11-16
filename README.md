@@ -84,33 +84,24 @@ instead of running `gcloud auth`.)
 Re-run the seed script any time you edit `src/data/lessons.ts` to keep
 Firestore in sync.
 
-### Real lesson videos
+### Lesson videos (Vimeo)
 
-The original site's videos (homepage intro + all 8 lessons, each in
-English and Hindi — 18 files) were downloaded from Wix's CDN at 480p using
-`scripts/download-source-videos.sh`, into `scripts/source-videos/`
-(gitignored — 195 MB of binaries don't belong in git).
+The homepage intro and all 8 lessons are hosted on Vimeo, in English and
+Hindi. "Lived Experiences" is split into two parts in both languages, and
+the Hindi "Four Ways of Acculturation" also has two parts. The player shows
+a Part 1 / Part 2 picker whenever a language has more than one part.
 
-If that folder is present when you run `npm run seed`, the script uploads
-each file to Storage and writes the resulting download URL onto the
-matching Firestore document — `lessons/<id>.videoUrlEn`/`videoUrlHi` for
-the 8 lessons, and `site/home.introVideoUrlEn`/`introVideoUrlHi` for the
-homepage intro. If a video file is missing for a given lesson, that field
-is simply left `null` and the site falls back to its "video coming soon"
-placeholder player — nothing breaks either way.
+The Vimeo player URLs live in [`src/data/lessons.ts`](src/data/lessons.ts)
+(`videosEn`/`videosHi` per lesson, plus `homeIntro`). To change a video,
+copy the `src="https://player.vimeo.com/video/…"` value out of Vimeo's
+embed code, or call the `vimeo(id, hash)` helper there with the numbers from
+a `https://vimeo.com/<id>/<hash>` link. Keep the hash, because the videos
+are unlisted and won't play without it. Then run `npm run seed` to copy
+the change into Firestore. The site also reads the links directly from
+that file, so they show even before you reseed.
 
-To (re-)download the source videos from scratch:
-
-```bash
-./scripts/download-source-videos.sh
-npm run seed
-```
-
-If you don't have `scripts/source-videos/` (e.g. on a fresh clone) and
-have your own footage instead, drop `en.mp4`/`hi.mp4` files into
-`scripts/source-videos/<lesson-id>/` (or `scripts/source-videos/home/` for
-the homepage intro) using the lesson ids from
-[`src/data/lessons.ts`](src/data/lessons.ts), then run `npm run seed`.
+On Vimeo, each video's **Privacy → Where can this be embedded?** setting
+must allow your Firebase Hosting domain (and `localhost` for development).
 
 ## Build & deploy to Firebase Hosting
 
@@ -141,9 +132,7 @@ src/
   lib/          Firebase app initialization
   types.ts      Shared TypeScript interfaces (Lesson, HomeIntro, Theme, ...)
 scripts/
-  seed.ts                      Seeds Firestore + Storage with lesson content (+ real videos if present); run via `tsx`
-  download-source-videos.sh    One-off: pulls the original site's real videos into source-videos/
-  source-videos/               Downloaded source footage (gitignored, not in the repo)
+  seed.ts       Seeds Firestore + Storage with lesson content and Vimeo links; run via `tsx`
 firestore.rules   Public read on lessons, public create-only on messages
 storage.rules     Public read on uploaded media, no public writes
 ```

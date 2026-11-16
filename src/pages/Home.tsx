@@ -31,7 +31,7 @@ const HIGHLIGHTS: Highlight[] = [
 ];
 
 export default function Home() {
-  const { introVideoUrlEn, introVideoUrlHi } = useHomeIntro();
+  const { introVideosEn, introVideosHi } = useHomeIntro();
 
   return (
     <>
@@ -88,8 +88,8 @@ export default function Home() {
           </div>
           <BilingualVideo
             title="Introduction to C-BEEMS"
-            videoUrlEn={introVideoUrlEn}
-            videoUrlHi={introVideoUrlHi}
+            videosEn={introVideosEn}
+            videosHi={introVideosHi}
           />
         </div>
       </section>

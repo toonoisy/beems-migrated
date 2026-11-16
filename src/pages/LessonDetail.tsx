@@ -36,7 +36,7 @@ export default function LessonDetail() {
         <p className="lesson-detail__summary">{lesson.summary}</p>
 
         <div className="lesson-detail__video">
-          <BilingualVideo title={lesson.title} videoUrlEn={lesson.videoUrlEn} videoUrlHi={lesson.videoUrlHi} />
+          <BilingualVideo title={lesson.title} videosEn={lesson.videosEn} videosHi={lesson.videosHi} />
         </div>
 
         <nav className="lesson-detail__nav" aria-label="Lesson navigation">

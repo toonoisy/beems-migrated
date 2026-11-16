@@ -3,12 +3,9 @@
 // Storage, using the shared content in src/data/lessons.ts so the client
 // fallback and the live database agree.
 //
-// Video uploads: if scripts/source-videos/<lesson-id>/en.mp4 and hi.mp4
-// exist, they're uploaded to Storage and their download URLs are written
-// to the lesson's videoUrlEn/videoUrlHi fields. Otherwise those fields
-// stay null and the site shows the "video coming soon" placeholder.
-// scripts/download-source-videos.sh populates that folder from the
-// original site's real footage — see that file for details.
+// Videos are hosted on Vimeo; their player URLs live in src/data/lessons.ts
+// and are written to each lesson's videosEn/videosHi fields (and to
+// site/home for the homepage intro). Nothing is uploaded for them.
 //
 // Auth: uses Application Default Credentials. Run `gcloud auth
 // application-default login` first, or set GOOGLE_APPLICATION_CREDENTIALS
@@ -18,17 +15,11 @@
 // Usage:
 //   npm run seed
 import { randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { lessons } from '../src/data/lessons.ts';
+import { homeIntro, lessons } from '../src/data/lessons.ts';
 import type { Lesson } from '../src/types.ts';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SOURCE_VIDEOS_DIR = path.join(__dirname, 'source-videos');
 
 const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT;
 const storageBucket = process.env.VITE_FIREBASE_STORAGE_BUCKET || (projectId ? `${projectId}.appspot.com` : undefined);
@@ -88,68 +79,27 @@ async function uploadThumbnail(lesson: Lesson): Promise<string> {
   return downloadUrlFor(storagePath, token);
 }
 
-// Uploads a local video file to Storage and returns its download URL, or
-// null if the file doesn't exist locally (nothing to upload yet).
-async function uploadVideoIfPresent(localPath: string, storagePath: string): Promise<string | null> {
-  if (!existsSync(localPath)) return null;
-
-  const token = randomUUID();
-  await bucket.upload(localPath, {
-    destination: storagePath,
-    metadata: {
-      contentType: 'video/mp4',
-      metadata: { firebaseStorageDownloadTokens: token },
-    },
-  });
-
-  return downloadUrlFor(storagePath, token);
-}
-
 async function seedLessons(): Promise<void> {
   for (const lesson of lessons) {
     const thumbnailUrl = await uploadThumbnail(lesson);
-
-    const videoUrlEn = await uploadVideoIfPresent(
-      path.join(SOURCE_VIDEOS_DIR, lesson.id, 'en.mp4'),
-      `lessons/${lesson.id}/en.mp4`,
-    );
-    const videoUrlHi = await uploadVideoIfPresent(
-      path.join(SOURCE_VIDEOS_DIR, lesson.id, 'hi.mp4'),
-      `lessons/${lesson.id}/hi.mp4`,
-    );
 
     await db.collection('lessons').doc(lesson.id).set({
       order: lesson.order,
       title: lesson.title,
       summary: lesson.summary,
       thumbnailUrl,
-      videoUrlEn,
-      videoUrlHi,
+      videosEn: lesson.videosEn ?? [],
+      videosHi: lesson.videosHi ?? [],
     });
 
-    const videoNote = videoUrlEn || videoUrlHi ? '' : ' (no video files found, placeholder player will show)';
-    console.log(`  ✓ ${lesson.title}${videoNote}`);
+    console.log(`  ✓ ${lesson.title}`);
   }
 }
 
 // The homepage's bilingual intro video isn't part of the lessons grid, so
 // it's kept as its own "site/home" document instead.
 async function seedHomeIntro(): Promise<void> {
-  const videoUrlEn = await uploadVideoIfPresent(
-    path.join(SOURCE_VIDEOS_DIR, 'home', 'en.mp4'),
-    'home/intro-en.mp4',
-  );
-  const videoUrlHi = await uploadVideoIfPresent(
-    path.join(SOURCE_VIDEOS_DIR, 'home', 'hi.mp4'),
-    'home/intro-hi.mp4',
-  );
-
-  if (!videoUrlEn && !videoUrlHi) {
-    console.log('  – Skipping home intro video (no local files found)');
-    return;
-  }
-
-  await db.collection('site').doc('home').set({ introVideoUrlEn: videoUrlEn, introVideoUrlHi: videoUrlHi });
+  await db.collection('site').doc('home').set(homeIntro);
   console.log('  ✓ Home intro video');
 }
 

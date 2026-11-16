@@ -4,13 +4,14 @@ export interface Lesson {
   title: string;
   summary: string;
   thumbnailUrl?: string | null;
-  videoUrlEn?: string | null;
-  videoUrlHi?: string | null;
+  // Vimeo player URLs, one per part (most lessons have a single part).
+  videosEn?: string[];
+  videosHi?: string[];
 }
 
 export interface HomeIntro {
-  introVideoUrlEn: string | null;
-  introVideoUrlHi: string | null;
+  introVideosEn: string[];
+  introVideosHi: string[];
 }
 
 export type Theme = 'light' | 'dark';

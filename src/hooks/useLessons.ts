@@ -30,7 +30,12 @@ export function useLessons() {
         if (cancelled) return;
 
         if (!snapshot.empty) {
-          const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Lesson);
+          // Layer each document over its local entry so fields the database
+          // doesn't have yet (e.g. Vimeo links before a re-seed) still show.
+          const docs = snapshot.docs.map(
+            (doc) =>
+              ({ ...fallbackLessons.find((l) => l.id === doc.id), id: doc.id, ...doc.data() }) as Lesson,
+          );
           setLessons(docs);
           setSource('firestore');
         }
