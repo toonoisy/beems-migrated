@@ -11,8 +11,8 @@ lessons and practical resources.
 - **Database:** Cloud Firestore (`lessons` collection for video content,
   `site` collection for the homepage intro video, `messages` collection
   for contact form submissions)
-- **Media:** lesson videos on Vimeo; lesson thumbnails are static SVGs in
-  `public/thumbnails/`, deployed with the site (Firebase Storage is unused)
+- **Media:** lesson videos and their poster images are hosted on Vimeo
+  (Firebase Storage is unused)
 - **Hosting:** Firebase Hosting
 
 The site works out of the box with placeholder content and images even
@@ -70,10 +70,7 @@ content, no Firebase project required.
 
 `scripts/seed.ts` (run via `tsx`) writes the 8 lesson documents and the
 homepage intro to Firestore, using
-[Application Default Credentials](https://firebase.google.com/docs/admin/setup#initialize-sdk).
-It also regenerates each lesson's thumbnail SVG into `public/thumbnails/`,
-so rebuild and redeploy hosting after running it if a title changed or you
-added a lesson:
+[Application Default Credentials](https://firebase.google.com/docs/admin/setup#initialize-sdk):
 
 ```bash
 npm run seed
@@ -100,7 +97,13 @@ The Vimeo player URLs live in [`src/data/lessons.ts`](src/data/lessons.ts)
 copy the `src="https://player.vimeo.com/video/…"` value out of Vimeo's
 embed code, or call the `vimeo(id, hash)` helper there with the numbers from
 a `https://vimeo.com/<id>/<hash>` link. Keep the hash, because the videos
-are unlisted and won't play without it. Then run `npm run seed` to copy
+are unlisted and won't play without it.
+
+Lesson cards use each lesson's English (part 1) Vimeo poster frame as the
+thumbnail. To get the image id for `vimeoPoster(...)`, open
+`https://vimeo.com/api/oembed.json?url=https://vimeo.com/<id>/<hash>` and
+copy the part of `thumbnail_url` between `/video/` and `-d_`. If you
+change a video's poster on Vimeo, update that id. Then run `npm run seed` to copy
 the change into Firestore. The site also reads the links directly from
 that file, so they show even before you reseed.
 
@@ -136,7 +139,7 @@ src/
   lib/          Firebase app initialization
   types.ts      Shared TypeScript interfaces (Lesson, HomeIntro, Theme, ...)
 scripts/
-  seed.ts       Seeds Firestore with lesson content and Vimeo links, writes thumbnails; run via `tsx`
+  seed.ts       Seeds Firestore with lesson content and Vimeo links; run via `tsx`
 firestore.rules   Public read on lessons, public create-only on messages
 storage.rules     Public read on uploaded media, no public writes
 ```
