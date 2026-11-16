@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-// Seeds Cloud Firestore's "lessons" and "site" collections and Firebase
-// Storage, using the shared content in src/data/lessons.ts so the client
-// fallback and the live database agree.
+// Seeds Cloud Firestore's "lessons" and "site" collections from the
+// shared content in src/data/lessons.ts so the client fallback and the
+// live database agree, and writes each lesson's thumbnail SVG into
+// public/thumbnails/ (deployed with the site; rebuild + deploy after).
+// Nothing is stored in Firebase Storage.
 //
 // Videos are hosted on Vimeo; their player URLs live in src/data/lessons.ts
 // and are written to each lesson's videosEn/videosHi fields (and to
 // site/home for the homepage intro). Nothing is uploaded for them.
 //
-// Config: VITE_FIREBASE_PROJECT_ID (and optionally
-// VITE_FIREBASE_STORAGE_BUCKET) are read from .env.local automatically;
-// variables already set in the shell take precedence.
+// Config: VITE_FIREBASE_PROJECT_ID is read from .env.local automatically;
+// a value already set in the shell takes precedence.
 //
 // Auth: uses Application Default Credentials. If serviceAccountKey.json
 // (downloaded from Firebase console > Project settings > Service accounts)
@@ -19,19 +20,18 @@
 //
 // Usage:
 //   npm run seed
-import { randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
 import { homeIntro, lessons } from '../src/data/lessons.ts';
 import type { Lesson } from '../src/types.ts';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ENV_FILE = path.join(ROOT, '.env.local');
 const SERVICE_ACCOUNT_KEY = path.join(ROOT, 'serviceAccountKey.json');
+const THUMBNAILS_DIR = path.join(ROOT, 'public', 'thumbnails');
 
 if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
 if (!process.env.GOOGLE_APPLICATION_CREDENTIALS && existsSync(SERVICE_ACCOUNT_KEY)) {
@@ -39,7 +39,6 @@ if (!process.env.GOOGLE_APPLICATION_CREDENTIALS && existsSync(SERVICE_ACCOUNT_KE
 }
 
 const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT;
-const storageBucket = process.env.VITE_FIREBASE_STORAGE_BUCKET || (projectId ? `${projectId}.appspot.com` : undefined);
 
 if (!projectId) {
   console.error(
@@ -51,11 +50,9 @@ if (!projectId) {
 initializeApp({
   credential: applicationDefault(),
   projectId,
-  storageBucket,
 });
 
 const db = getFirestore();
-const bucket = getStorage().bucket();
 
 function placeholderSvg(lesson: Lesson): string {
   const label = `Lesson ${lesson.order}`;
@@ -79,32 +76,21 @@ function escapeXml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function downloadUrlFor(storagePath: string, token: string): string {
-  const encodedPath = encodeURIComponent(storagePath);
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media&token=${token}`;
-}
-
-async function uploadThumbnail(lesson: Lesson): Promise<string> {
-  const storagePath = `lessons/${lesson.id}/thumbnail.svg`;
-  const token = randomUUID();
-
-  await bucket.file(storagePath).save(placeholderSvg(lesson), {
-    contentType: 'image/svg+xml',
-    metadata: { metadata: { firebaseStorageDownloadTokens: token } },
-  });
-
-  return downloadUrlFor(storagePath, token);
+// Thumbnails are served from public/thumbnails/<lesson-id>.svg, which is
+// where LessonCard looks for them.
+function writeThumbnail(lesson: Lesson): void {
+  mkdirSync(THUMBNAILS_DIR, { recursive: true });
+  writeFileSync(path.join(THUMBNAILS_DIR, `${lesson.id}.svg`), placeholderSvg(lesson));
 }
 
 async function seedLessons(): Promise<void> {
   for (const lesson of lessons) {
-    const thumbnailUrl = await uploadThumbnail(lesson);
+    writeThumbnail(lesson);
 
     await db.collection('lessons').doc(lesson.id).set({
       order: lesson.order,
       title: lesson.title,
       summary: lesson.summary,
-      thumbnailUrl,
       videosEn: lesson.videosEn ?? [],
       videosHi: lesson.videosHi ?? [],
     });
@@ -124,7 +110,7 @@ async function seed(): Promise<void> {
   console.log(`Seeding project "${projectId}"…`);
   await seedLessons();
   await seedHomeIntro();
-  console.log('Done. The Videos and Home pages will now read this content from Firestore/Storage.');
+  console.log('Done. The Videos and Home pages will now read this content from Firestore.');
 }
 
 seed().catch((error) => {

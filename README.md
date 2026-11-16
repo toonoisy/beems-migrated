@@ -11,7 +11,8 @@ lessons and practical resources.
 - **Database:** Cloud Firestore (`lessons` collection for video content,
   `site` collection for the homepage intro video, `messages` collection
   for contact form submissions)
-- **Media storage:** Firebase Storage (lesson thumbnails/video files)
+- **Media:** lesson videos on Vimeo; lesson thumbnails are static SVGs in
+  `public/thumbnails/`, deployed with the site (Firebase Storage is unused)
 - **Hosting:** Firebase Hosting
 
 The site works out of the box with placeholder content and images even
@@ -65,11 +66,14 @@ content, no Firebase project required.
    firebase deploy --only firestore:rules,storage
    ```
 
-## Seeding Firestore + Storage with placeholder lesson content
+## Seeding Firestore with lesson content
 
-`scripts/seed.ts` (run via `tsx`) writes the 8 lesson documents to Firestore and uploads a
-placeholder thumbnail image for each one to Storage, using
-[Application Default Credentials](https://firebase.google.com/docs/admin/setup#initialize-sdk):
+`scripts/seed.ts` (run via `tsx`) writes the 8 lesson documents and the
+homepage intro to Firestore, using
+[Application Default Credentials](https://firebase.google.com/docs/admin/setup#initialize-sdk).
+It also regenerates each lesson's thumbnail SVG into `public/thumbnails/`,
+so rebuild and redeploy hosting after running it if a title changed or you
+added a lesson:
 
 ```bash
 npm run seed
@@ -132,7 +136,7 @@ src/
   lib/          Firebase app initialization
   types.ts      Shared TypeScript interfaces (Lesson, HomeIntro, Theme, ...)
 scripts/
-  seed.ts       Seeds Firestore + Storage with lesson content and Vimeo links; run via `tsx`
+  seed.ts       Seeds Firestore with lesson content and Vimeo links, writes thumbnails; run via `tsx`
 firestore.rules   Public read on lessons, public create-only on messages
 storage.rules     Public read on uploaded media, no public writes
 ```

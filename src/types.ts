@@ -3,7 +3,6 @@ export interface Lesson {
   order: number;
   title: string;
   summary: string;
-  thumbnailUrl?: string | null;
   // Vimeo player URLs, one per part (most lessons have a single part).
   videosEn?: string[];
   videosHi?: string[];
